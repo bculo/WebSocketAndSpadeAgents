@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using VAS_API.Contracts;
 using VAS_API.Interfaces.Services;
 using VAS_API.Models;
 
@@ -11,10 +12,12 @@ namespace VAS_API.Controllers
     public class AuctionController : ControllerBase
     {
         private readonly IAuctionService _service;
+        private readonly IUserService _userService;
 
-        public AuctionController(IAuctionService service)
+        public AuctionController(IAuctionService service, IUserService userService)
         {
             _service = service;
+            _userService = userService;
         }
 
         [HttpGet("get")]
@@ -24,21 +27,34 @@ namespace VAS_API.Controllers
         }
 
         [HttpPut("buyer")]
-        public async Task<IActionResult> AddBuyer(VehicleAuction auction)
+        public async Task<IActionResult> AddBuyer([FromBody] AddBuyerRequestModel auction)
         {
-            return Ok(await _service.AddBuyer(auction));
+            return Ok(await _service.AddBuyer(auction.AuctionId ,auction.Buyer));
+        }
+
+        [HttpPut("newprice")]
+        public async Task<IActionResult> ChangeItemPrice([FromBody] ChangePriceRequestModel auction)
+        {
+            return Ok(await _service.ChangePrice(auction.AuctionId, auction.EndPrice));
         }
 
         [HttpPut("finish")]
-        public async Task<IActionResult> FinishAuctionForItem(VehicleAuction auction)
+        public async Task<IActionResult> FinishAuctionForItem([FromBody] EndAuctionRequestModel auction)
         {
-            return Ok(await _service.FinishAuction(auction));
+            return Ok(await _service.FinishAuction(auction.AuctionId, auction.EndPrice, auction.Winner));
         }
 
-        [HttpPut("setdates")]
-        public async Task<IActionResult> SetAuctionStartTime(VehicleAuction auction)
+        [HttpPost("setdates")]
+        public async Task<IActionResult> SetAuctionStartTime([FromBody] UpdateStartEndTimeRequest auction)
         {
-            return Ok(await _service.SetAuctionStartEndAnd(auction));
+            return Ok(await _service.SetAuctionStartEndAnd(auction.AuctionId, auction.AuctionStart, auction.AuctionEnd));
+        }
+
+        [HttpPost("startbuyer")]
+        public async Task<IActionResult> StartBuyer([FromBody] User newBuyer)
+        {
+            await _userService.StartBuyer(newBuyer);
+            return Ok();
         }
 
         [HttpGet("getitem")]

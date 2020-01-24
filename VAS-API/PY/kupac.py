@@ -10,16 +10,19 @@ from spade.template import Template
 import sys
 from time import sleep
 import argparse
+import jsonpickle
+import json
 from ast import literal_eval
 from aioxmpp import JID
+from datetime import datetime, timedelta
+
+from Vehicle import Vechile
 
 class Buyer(Agent):
 
     class Registration(OneShotBehaviour):
 
         async def run(self):
-
-            #create spade message instance
             msg = Message(
                 to="bogokdu@jabber.eu.org",
                 body = self.agent.id,
@@ -29,18 +32,42 @@ class Buyer(Agent):
                     "intent": "registerbuyer"
                     }
             )
-            
-            #send message to receiver
             await self.send(msg)
+            print("Poruka za registraciju poslana !")
 
-            print("poruka poslana !")
+            #wait message
+            response = await self.receive(timeout=100)
+            if response:
+                print("Odgovor na registraciju stigao")
+                intent = response.get_metadata("intent")
+                if intent == "auctionitems":
+                    temp = jsonpickle.decode(response.body)
+                    for item in temp:
+                        item.__class__ = Vechile
+                        self.agent.possibleAuctions.append(temp)
+                    numOfAuctionsItems = len(self.agent.possibleAuctions)
+                    print(f"Total auction items to bid before filter: {numOfAuctionsItems}")
+                    
+                    self.filterItems()
+                    numOfAuctionsItems = len(self.agent.possibleAuctions)
+                    print(f"Total auction items to bid after filter: {numOfAuctionsItems}")
 
+            else:
+                print("Poruka od organizatora nije stigla")
+
+        def filterItems(self):
+            print("filterItems function called")
+
+            for wantedItem in self.agent.wantedItems:
+                print(wantedItem)
+                        
 
     #program start point
     async def setup(self):
         #set id
         self.id = self.getId()
-        print(self.id)
+        self.possibleAuctions = []
+        self.wantedItems = []
 
         #add registration behaviour
         registrationBehaviour = self.Registration()

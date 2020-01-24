@@ -27,44 +27,53 @@ namespace VAS_API.Services
             return Task.FromResult(AuctionItems);
         }
 
-        public Task<bool> AddBuyer(VehicleAuction vehicle)
+        public Task<bool> AddBuyer(Guid id, string buyerIdentifier)
         {
-            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == vehicle.AuctionId);
+            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == id);
 
             if (result == null)
                 return Task.FromResult(false);
 
-            foreach(var buyer in vehicle.Buyers)
-            {
-                if (result.Buyers.All(i => i != buyer))
-                    result.Buyers.Add(buyer);
-            }
+            if (result.Buyers.All(i => i != buyerIdentifier))
+                result.Buyers.Add(buyerIdentifier);
 
             return Task.FromResult(true);
         }
 
-        public Task<bool> FinishAuction(VehicleAuction vehicle)
+        public Task<bool> FinishAuction(Guid id, int endPrice, string winner)
         {
-            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == vehicle.AuctionId);
+            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == id);
 
             if (result == null)
                 return Task.FromResult(false);
 
-            result.EndPrice = vehicle.EndPrice;
-            result.Winner = vehicle.Winner;
+            result.EndPrice = endPrice;
+            result.Winner = winner;
 
             return Task.FromResult(true);
         }
 
-        public Task<bool> SetAuctionStartEndAnd(VehicleAuction vehicle)
+        public Task<bool> SetAuctionStartEndAnd(Guid id, string start, string end)
         {
-            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == vehicle.AuctionId);
+            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == id);
 
             if (result == null)
                 return Task.FromResult(false);
 
-            result.AuctionEnd = vehicle.AuctionEnd;
-            result.AuctionStart = vehicle.AuctionStart;
+            result.AuctionStart = DateTime.Parse(start);
+            result.AuctionEnd = DateTime.Parse(end);
+
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> ChangePrice(Guid auctionId, int endPrice)
+        {
+            var result = AuctionItems.FirstOrDefault(i => i.AuctionId == auctionId);
+
+            if (result == null)
+                return Task.FromResult(false);
+
+            result.EndPrice = endPrice;
 
             return Task.FromResult(true);
         }
