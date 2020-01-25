@@ -11,7 +11,7 @@ namespace VAS_API.Configurations
         public void Configure(IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton<IAuctionService, AuctionService>();
-            services.AddTransient<IUserService, UserService>();
+            services.AddSingleton<IUserService, UserService>();
         }
     }
 }

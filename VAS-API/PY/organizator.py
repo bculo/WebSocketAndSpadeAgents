@@ -23,6 +23,7 @@ import urllib3
 from enum import Enum
 
 from Vehicle import Vechile
+from ItemRegistration import ItemRegistration
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -62,8 +63,9 @@ class Organizer(Agent):
                 msg = await self.receive(timeout=100)
                 if msg:
                     intent = msg.get_metadata("intent")
-                    if intent == "registerbuyer": #register user
-                        
+
+                    #register buyer
+                    if intent == "registerbuyer":
                         #check if user is in registeredUser array
                         if msg.body not in self.agent.registeredUsers:
                             self.agent.registeredUsers.append(msg.body)
@@ -90,11 +92,23 @@ class Organizer(Agent):
                             )
                         await self.send(msg)
                         print("ORGANIZATOR: Poruka aukcija poslana")
+                    
+                    #register buyer auctions
+                    if intent == "auctionitemsreg":
+                        temp = jsonpickle.decode(msg.body)
+                        temp.__class__ = ItemRegistration
+                        for auction in self.agent.auctions:
+                            for registeredAuction in temp.auctionItems:
+                                if auction.auctionId == registeredAuction:
+                                    print(f"Korisnik {temp.agentId} prijavljen na aukciju {auction.auctionId}")
+                                    auction.buyers.append(temp.agentId)
+
                 else:
                     print("Cekam nove sudionike...")
             except:
                 print("Error ocured")
 
+    #pocetna tocka
     async def setup(self):
         self.auctions = self.getAuctionItems()
         self.updateAuctionTimes(self.auctions)

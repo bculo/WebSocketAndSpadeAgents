@@ -13,7 +13,7 @@ namespace VAS_API.Configurations
     {
         public void Configure(IServiceCollection services, IConfiguration configuration)
         {
-            var p = configuration.GetSectionApp<AuctionOrganizerOptions>();
+            var p = configuration.GetSectionApp<AuctionAuctioneerOptions>();
             DirectoryInfo info = SolutionProvider.GetSolutionDirectoryPath();
             string projectName = info.Name;
             var executableFilePath = Path.Combine(info.FullName, projectName, p.GetFilePath);

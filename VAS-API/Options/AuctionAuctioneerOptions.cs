@@ -3,7 +3,7 @@ using System.IO;
 
 namespace VAS_API.Options
 {
-    public sealed class AuctionOrganizerOptions
+    public sealed class AuctionAuctioneerOptions
     {
         public string Username { get; set; }
         public string Password { get; set; }

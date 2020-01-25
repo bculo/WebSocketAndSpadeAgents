@@ -10,7 +10,8 @@ namespace VAS_API.Configurations
         public void Configure(IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<AuctionBuyerOptions>(configuration.GetSection(nameof(AuctionBuyerOptions)));
-            services.Configure<AuctionOrganizerOptions>(configuration.GetSection(nameof(AuctionOrganizerOptions)));
+            services.Configure<AuctionAuctioneerOptions>(configuration.GetSection(nameof(AuctionAuctioneerOptions)));
+            services.Configure<AvailabeBuyers>(configuration.GetSection(nameof(AvailabeBuyers)));
         }
     }
 }

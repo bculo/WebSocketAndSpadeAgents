@@ -51,10 +51,22 @@ namespace VAS_API.Controllers
         }
 
         [HttpPost("startbuyer")]
-        public async Task<IActionResult> StartBuyer([FromBody] User newBuyer)
+        public async Task<IActionResult> StartBuyer([FromBody] StartBuyerRequestModel newBuyer)
         {
-            await _userService.StartBuyer(newBuyer);
+            await _userService.StartBuyer(newBuyer.Email);
             return Ok();
+        }
+
+        [HttpGet("getuserlist/{email}")]
+        public async Task<IActionResult> StartBuyer([FromRoute] string email)
+        {
+            return Ok(await _userService.GetUserItems(email));
+        }
+
+        [HttpGet("getauctioneerinfo")]
+        public async Task<IActionResult> AuctioneerInfo()
+        {
+            return Ok(await _userService.GetAuctioneerInfo());
         }
 
         [HttpGet("getitem")]
