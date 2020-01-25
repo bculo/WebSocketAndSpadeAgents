@@ -18,6 +18,8 @@ class Vechile:
         self.buyers = []
         self.type = vechileType
         self.winner = winner
+        self.active = True
+        self.buyersNotified = False
 
     #print instance info
     def printInfo(self):

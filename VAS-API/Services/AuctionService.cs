@@ -90,7 +90,7 @@ namespace VAS_API.Services
                 Model = "BMW F80",
                 Type = VehicleType.CAR,
                 Year = 2015,
-                StartPrice = 50000,
+                StartPrice = 44000,
                 Mileage = 30000,
                 BidIncrement = 1000,
             });

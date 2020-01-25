@@ -12,6 +12,7 @@ import requests
 import json
 import jsonpickle
 from datetime import datetime, timedelta
+import traceback
 
 import sys
 from time import sleep
@@ -24,6 +25,9 @@ from enum import Enum
 
 from Vehicle import Vechile
 from ItemRegistration import ItemRegistration
+from Bid import Bid
+from NewBid import NewBid
+from Winner import Winner
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -55,6 +59,62 @@ class EndAuctionRequestModel:
 
 #auction logic
 class Organizer(Agent):
+
+    #vodenje aukcije
+    class Auction(PeriodicBehaviour):
+
+        async def run(self):
+            for auctionElement in self.agent.auctions:
+
+                if auctionElement.auctionStart < datetime.now():
+                    if auctionElement.auctionEnd > datetime.now():
+
+                        if len(auctionElement.buyers) > 0:
+                            for buyer in auctionElement.buyers:
+                                bid = Bid(auctionElement.auctionId, auctionElement.bidIncrement, auctionElement.winner, auctionElement.endPrice)
+                                bidJson = jsonpickle.encode(bid)
+                                msgNotify = Message(
+                                    to= buyer,
+                                    body = bidJson,
+                                    metadata = {
+                                        "ontology": "aukcija",
+                                        "language": "hrvatski",
+                                        "intent": "bidajakooces"
+                                    }
+                                )
+                                await self.send(msgNotify)
+                        else:
+                            print(f"AUKCIJA {auctionElement.auctionId} NEMA SUDIONIKA")
+                    
+                        if auctionElement.winner != None:
+                            print(f"AUKCIJU VODI AGENT {auctionElement.winner} -> {auctionElement.endPrice}")
+
+                    else:
+                        if auctionElement.active == True:                    
+                            if auctionElement.winner != None:
+                                print(f"AUKCIJU VODI AGENT {auctionElement.winner} -> {auctionElement.endPrice}")
+                                
+                            if len(auctionElement.buyers) > 0:
+                                for buyer in auctionElement.buyers:
+                                    win = Winner(auctionElement.auctionId, auctionElement.winner, auctionElement.endPrice)
+                                    winJson = jsonpickle.encode(win)
+                                    msgNotify = Message(
+                                        to= buyer,
+                                        body = winJson,
+                                        metadata = {
+                                            "ontology": "aukcija",
+                                            "language": "hrvatski",
+                                            "intent": "aukcijagotova"
+                                        }
+                                    )
+                                    await self.send(msgNotify)
+                            
+                            else:
+                                print(f"AUKCIJA {auctionElement.auctionId} NEMA SUDIONIKA")
+                            
+                            #TODO PUSH TO WEB
+
+                            auctionElement.active = False
 
     #registracija korisnika
     class Communication(CyclicBehaviour):
@@ -102,11 +162,34 @@ class Organizer(Agent):
                                 if auction.auctionId == registeredAuction:
                                     print(f"Korisnik {temp.agentId} prijavljen na aukciju {auction.auctionId}")
                                     auction.buyers.append(temp.agentId)
+                    
+                    #biding
+                    if intent == "bid":
+                        bider = jsonpickle.decode(msg.body)
+                        bider.__class__ = NewBid
+                        for auction in self.agent.auctions:
+                            if auction.auctionId == bider.auctionId:
+                                if auction.endPrice < bider.agentPrice:
+                                    auction.endPrice = bider.agentPrice
+                                    auction.winner = bider.agentId
 
-                else:
-                    print("Cekam nove sudionike...")
-            except:
-                print("Error ocured")
+                                    #TODO PUSH TO WEB
+                                else:
+                                    bid = Bid(auction.auctionId, auction.bidIncrement, auction.winner, auction.endPrice)
+                                    bidJson = jsonpickle.encode(bid)
+                                    msgNotify = Message(
+                                        to= bider.agentId,
+                                        body = bidJson,
+                                        metadata = {
+                                            "ontology": "aukcija",
+                                            "language": "hrvatski",
+                                            "intent": "bidajakooces"
+                                        }
+                                    )
+                                    await self.send(msgNotify)                                    
+
+            except Exception:
+                traceback.print_exc()
 
     #pocetna tocka
     async def setup(self):
@@ -116,6 +199,8 @@ class Organizer(Agent):
 
         komunikacijaPonasanje = self.Communication()
         self.add_behaviour(komunikacijaPonasanje)
+        auctionBehaviour = self.Auction(period=5)
+        self.add_behaviour(auctionBehaviour)
 
     #update start and end time of auction item
     def updateAuctionTimes(self, auctions):

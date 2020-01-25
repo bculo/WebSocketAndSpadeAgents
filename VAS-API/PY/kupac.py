@@ -21,6 +21,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from Vehicle import Vechile
 from ItemRegistration import ItemRegistration
+from Bid import Bid
+from NewBid import NewBid
+from Winner import Winner
 
 class WantedItem:
     def __init__(self, model, year, horsePower, milage, budget):
@@ -29,6 +32,7 @@ class WantedItem:
         self.horsePower = horsePower
         self.milage = milage
         self.budget = budget
+        self.auctionId = None
 
     def printInfo(self):
         print(f"{self.model} | {self.year} | {self.horsePower} | {self.milage} | {self.budget}")
@@ -43,10 +47,39 @@ class Buyer(Agent):
 
             if msg:
                 intent = msg.get_metadata("intent")
-                print(f"PRIMIO PORUKU SA NAMJENOM: {intent}")
-            else:
-                print("Nema poruke")
+                
+                if intent == "bidajakooces":
+                    content = jsonpickle.decode(msg.body)
+                    content.__class__ = Bid
+                    
+                    if content.winner == None or content.winner != self.agent.id:
+                        for wantedItem in self.agent.wantedItems:
+                            if wantedItem.auctionId in content.auctionId:
+                                sum = content.price + content.minIncrement
+                                if sum > content.price and sum < wantedItem.budget:
+                                    newBid = NewBid(content.auctionId, self.agent.id, sum)
+                                    newBidJson = jsonpickle.encode(newBid)
+                                    print(newBidJson)
+                                    msgNotify = Message(
+                                        to= self.agent.auctioneer,
+                                        body = newBidJson,
+                                        metadata = {
+                                            "ontology": "aukcija",
+                                            "language": "hrvatski",
+                                            "intent": "bid"
+                                        }
+                                    )
+                                    await self.send(msgNotify)
+                                else:
+                                    print("NEMAM PARA ZA BIDANJE")
 
+                    else:
+                        print("VODIM OVU AUKCIJU") 
+
+                if intent == "aukcijagotova":
+                    winner = jsonpickle.decode(msg.body)
+                    winner.__class__ = Winner
+                    print(f"Pobjednik: {winner.agentId} aukcije {winner.auctionId} -> IZNOS: {winner.price}")
 
     #registracija korisnika
     class Registration(OneShotBehaviour):
@@ -117,9 +150,8 @@ class Buyer(Agent):
         #dodavanje ponasanja
         registrationBehaviour = self.Registration()
         self.add_behaviour(registrationBehaviour)
-        communictionTemplate = Template(metadata = {"ontology": "bid"})
         communictionBehaviour = self.Communication()
-        self.add_behaviour(communictionBehaviour, communictionTemplate)
+        self.add_behaviour(communictionBehaviour)
 
     #dohvati mail osobe koja vodi aukciju sa apija
     def getAuctioneerInfo(self):
@@ -148,9 +180,10 @@ class Buyer(Agent):
                 if w.milage > a.mileage: #dobra kilometraza
                     continue
 
-                if w.budget > a.startPrice: #dobar budget
+                if w.budget < a.startPrice: #dobar budget
                     continue
-
+                
+                w.auctionId = a.auctionId
                 self.finalAuctions.append(a)
         print(f"{self.id} sudjelujem na {len(self.finalAuctions)} aukcija")
 
