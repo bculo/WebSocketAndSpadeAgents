@@ -8,7 +8,7 @@ export default interface IVehicle{
     endPrice: number;
     images: string[];
     year: number;
-    milage: number;
+    mileage: number;
     startPrice: number;
     vehicleType: number;
     color: string;

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VAS_API.Configurations;
+using VAS_API.SignalR;
 
 namespace VAS_API
 {
@@ -30,13 +31,14 @@ namespace VAS_API
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors(i => i.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors("CorsPolicy");
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<CommunicationHub>("/auction");
                 endpoints.MapControllers();
             });
         }

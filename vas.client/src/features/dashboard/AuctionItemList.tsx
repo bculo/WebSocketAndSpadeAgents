@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { RootStoreContext } from '../../app/stores/rootStore';
-import { Segment, Item } from 'semantic-ui-react';
+import { Segment, Item, Grid, Image } from 'semantic-ui-react';
 import { observer } from "mobx-react-lite";
 
 const AuctionItemList = () => {
@@ -13,10 +13,24 @@ const AuctionItemList = () => {
 
           {getAuctionItemsStore.map(record => (
             <Item key={record.auctionId}>
-              <Item.Content>
-                <Item.Header as="a">{record.auctionId}</Item.Header>
-                <Item.Content>{record.horsePower}</Item.Content>
-              </Item.Content>
+              <Grid columns={2}>
+                <Grid.Column>
+                  <Image src={record.images[0]}/>
+                </Grid.Column>
+                <Grid.Column>
+                  <Item.Content>
+                    <Item.Header as="a">ID AUKCIJE: {record.auctionId}</Item.Header>
+                    <Item.Content>MODEL: {record.model}</Item.Content>
+                    <Item.Content>SNAGA: {record.horsePower}</Item.Content>
+                    <Item.Content>KILOMETRAŽA: {record.mileage}</Item.Content>
+                    <Item.Content>POČETNA CIJENA: {record.startPrice}</Item.Content>
+                    <Item.Content>GODINA: {record.year}</Item.Content>
+                    <Item.Content>ZADNJA CIJENA: {record.endPrice} -> KUPAC: {record.winner}</Item.Content>
+                    <Item.Content>POČETAK AUKCIJE: {record?.auctionStart}</Item.Content>
+                    <Item.Content>KRAJ AUKCIJE: {record?.auctionEnd}</Item.Content>
+                  </Item.Content>
+                </Grid.Column>
+              </Grid>
             </Item>
           ))}
 

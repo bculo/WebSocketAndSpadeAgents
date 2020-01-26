@@ -1,8 +1,9 @@
 import React, { Fragment, useContext, useEffect } from 'react'
-import { Header, Button, Segment, Container, Item } from 'semantic-ui-react'
+import { Header, Button, Container } from 'semantic-ui-react'
 import { RootStoreContext } from '../../app/stores/rootStore'
 import AuctionItemList from "./AuctionItemList";
 import { observer } from "mobx-react-lite";
+import * as signalR from "@microsoft/signalr";
 
 const Dashboard = () => {
     const rootStore = useContext(RootStoreContext);
@@ -10,7 +11,34 @@ const Dashboard = () => {
 
     useEffect(() => {
         getAuctionItemsApi()
+        connectToHub()
     }, [getAuctionItemsApi]);
+
+    function connectToHub(){
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:44388/auction")
+            .build();
+
+        connection.start()
+            .then(() => console.log("CONNECTED TO HUB"))
+            .catch(error => console.log(error));
+
+        connection.on("AddBuyer", (message: string) => {
+            console.log("ADDBUYER: " + message)
+        });
+
+        connection.on("PriceChanged", (message: string) => {
+            getAuctionItemsApi();
+        });
+
+        connection.on("AuctionFinished", (message: string) => {
+            getAuctionItemsApi();
+        });
+
+        connection.on("UpdateTimes", (message: string) => {
+            getAuctionItemsApi();
+        });
+    }
 
     return (
         <Fragment>

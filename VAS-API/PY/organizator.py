@@ -94,6 +94,12 @@ class Organizer(Agent):
                             if auctionElement.winner != None:
                                 print(f"AUKCIJU VODI AGENT {auctionElement.winner} -> {auctionElement.endPrice}")
                                 
+                                update = EndAuctionRequestModel(auctionElement.auctionId, auctionElement.endPrice, auctionElement.winner)
+                                updateJson = jsonpickle.encode(update)
+                                apiUrl = "https://localhost:44388/api/auction/finish"
+                                headers = {'Content-Type': 'application/json'}
+                                requests.put(url=apiUrl, data=updateJson, headers=headers, timeout=10, verify=False)
+                                
                             if len(auctionElement.buyers) > 0:
                                 for buyer in auctionElement.buyers:
                                     win = Winner(auctionElement.auctionId, auctionElement.winner, auctionElement.endPrice)
@@ -112,8 +118,7 @@ class Organizer(Agent):
                             else:
                                 print(f"AUKCIJA {auctionElement.auctionId} NEMA SUDIONIKA")
                             
-                            #TODO PUSH TO WEB
-
+                            print("ZAVRSAVAM AUKCIJU ZA OVAJ PREDMET")
                             auctionElement.active = False
 
     #registracija korisnika
@@ -162,6 +167,12 @@ class Organizer(Agent):
                                 if auction.auctionId == registeredAuction:
                                     print(f"Korisnik {temp.agentId} prijavljen na aukciju {auction.auctionId}")
                                     auction.buyers.append(temp.agentId)
+
+                                    update = AddBuyerRequest(auction.auctionId, temp.agentId)
+                                    updateJson = jsonpickle.encode(update)
+                                    apiUrl = "https://localhost:44388/api/auction/buyer"
+                                    headers = {'Content-Type': 'application/json'}
+                                    requests.put(url=apiUrl, data=updateJson, headers=headers, timeout=10, verify=False)
                     
                     #biding
                     if intent == "bid":
@@ -173,7 +184,11 @@ class Organizer(Agent):
                                     auction.endPrice = bider.agentPrice
                                     auction.winner = bider.agentId
 
-                                    #TODO PUSH TO WEB
+                                    update = EndAuctionRequestModel(auction.auctionId, auction.endPrice, auction.winner)
+                                    updateJson = jsonpickle.encode(update)
+                                    apiUrl = "https://localhost:44388/api/auction/newprice"
+                                    headers = {'Content-Type': 'application/json'}
+                                    requests.put(url=apiUrl, data=updateJson, headers=headers, timeout=10, verify=False)
                                 else:
                                     bid = Bid(auction.auctionId, auction.bidIncrement, auction.winner, auction.endPrice)
                                     bidJson = jsonpickle.encode(bid)
@@ -223,6 +238,11 @@ class Organizer(Agent):
                 print("Auction start and end time updated")
             else: #problem with api
                 print("Problem with API")
+
+        print("UPDATE CLIENT API CALL")
+        apiUrl = "https://localhost:44388/api/auction/updateclient"
+        headers = {'Content-Type': 'application/json'}
+        response = requests.get(url=apiUrl, headers=headers, timeout=10, verify=False)
 
     #get items from API
     def getAuctionItems(self):

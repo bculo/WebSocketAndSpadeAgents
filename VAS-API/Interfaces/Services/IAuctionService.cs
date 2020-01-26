@@ -12,6 +12,6 @@ namespace VAS_API.Interfaces.Services
         Task<bool> AddBuyer(Guid id, string buyerIdentifier);
         Task<bool> FinishAuction(Guid id, int endPrice, string winner);
         Task<VehicleAuction> GetVehcile(Guid id);
-        Task<bool> ChangePrice(Guid auctionId, int endPrice);
+        Task<bool> ChangePrice(Guid auctionId, int endPrice, string winner);
     }
 }

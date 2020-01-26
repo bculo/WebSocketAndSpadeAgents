@@ -49,7 +49,6 @@ namespace VAS_API.Services
 
             result.EndPrice = endPrice;
             result.Winner = winner;
-
             return Task.FromResult(true);
         }
 
@@ -66,7 +65,7 @@ namespace VAS_API.Services
             return Task.FromResult(true);
         }
 
-        public Task<bool> ChangePrice(Guid auctionId, int endPrice)
+        public Task<bool> ChangePrice(Guid auctionId, int endPrice, string winner)
         {
             var result = AuctionItems.FirstOrDefault(i => i.AuctionId == auctionId);
 
@@ -74,6 +73,7 @@ namespace VAS_API.Services
                 return Task.FromResult(false);
 
             result.EndPrice = endPrice;
+            result.Winner = winner;
 
             return Task.FromResult(true);
         }
@@ -94,6 +94,7 @@ namespace VAS_API.Services
                 Mileage = 30000,
                 BidIncrement = 1000,
             });
+            AuctionItems.Last().Images.Add(@"https://images.pexels.com/photos/794435/pexels-photo-794435.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
 
             //second car
             AuctionItems.Add(new VehicleAuction
@@ -109,6 +110,7 @@ namespace VAS_API.Services
                 Mileage = 80000,
                 BidIncrement = 700,
             });
+            AuctionItems.Last().Images.Add(@"https://images.pexels.com/photos/802254/pexels-photo-802254.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
 
             //third car
             AuctionItems.Add(new VehicleAuction
@@ -121,8 +123,10 @@ namespace VAS_API.Services
                 Type = VehicleType.CAR,
                 Year = 1995,
                 StartPrice = 20000,
+                BidIncrement = 1400,
                 Mileage = 120000,
             });
+            AuctionItems.Last().Images.Add(@"https://images.pexels.com/photos/1396015/pexels-photo-1396015.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
 
             //fourth car
             AuctionItems.Add(new VehicleAuction
@@ -138,6 +142,7 @@ namespace VAS_API.Services
                 Mileage = 12000,
                 BidIncrement = 500,
             });
+            AuctionItems.Last().Images.Add(@"https://images.pexels.com/photos/595807/pexels-photo-595807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
 
             //fifth car
             AuctionItems.Add(new VehicleAuction
@@ -153,6 +158,7 @@ namespace VAS_API.Services
                 Mileage = 120000,
                 BidIncrement = 300,
             });
+            AuctionItems.Last().Images.Add(@"https://images.pexels.com/photos/1036792/pexels-photo-1036792.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500");
         }
     }
 }
